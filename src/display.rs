@@ -35,8 +35,8 @@ const SDL_WINDOW_CLEAR_COLOR: Color = Color {
 
 const SELECTION_RECTANGLE_COLOR: Color = Color::RED;
 
-const IDLE_LOOP_SLEEP_DURATION: Duration = Duration::from_millis(100);
-const RENDERING_LOOP_ACTIVITY_DURATION: Duration = Duration::from_millis(20);
+const IDLE_LOOP_SLEEP_DURATION: Duration = Duration::from_millis(50);
+const RENDERING_SCREEN_REFRESH_PERIOD: Duration = Duration::from_millis(20);
 
 pub trait PixelProvider {
     fn with_new_bounds(
@@ -166,8 +166,7 @@ pub fn render_sdl(mut pixel_provider: impl PixelProvider) -> Result<(), String> 
         }
 
         let is_rendering: bool;
-        if (width_pos as u32) < pixel_provider.width()
-            || (height_pos as u32) < pixel_provider.height()
+        if (height_pos as u32) < pixel_provider.height()
         {
             is_rendering = true;
             let instant = std::time::Instant::now();
@@ -184,7 +183,7 @@ pub fn render_sdl(mut pixel_provider: impl PixelProvider) -> Result<(), String> 
                         break;
                     }
                 }
-                if instant.elapsed().gt(&RENDERING_LOOP_ACTIVITY_DURATION) {
+                if instant.elapsed().gt(&RENDERING_SCREEN_REFRESH_PERIOD) {
                     break;
                 }
             }
