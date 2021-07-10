@@ -21,15 +21,38 @@ SOFTWARE.
 mod display;
 mod mandelbrot;
 
-impl display::SdlPixelProvider for mandelbrot::MandelbrotContext {
+use mandelbrot::MandelbrotContext;
+
+impl display::PixelProvider for MandelbrotContext {
+    fn with_new_bounds(
+        self,
+        width: u32,
+        height: u32,
+        upper_left: (f64, f64),
+        lower_right: (f64, f64),
+    ) -> Self {
+        MandelbrotContext {
+            width: width as usize,
+            height: height as usize,
+            upper_left: num::Complex {
+                re: upper_left.0,
+                im: upper_left.1,
+            },
+            lower_right: num::Complex {
+                re: lower_right.0,
+                im: lower_right.1,
+            },
+            limit: self.limit,
+        }
+    }
     fn width(&self) -> u32 {
         self.width as u32
     }
     fn height(&self) -> u32 {
         self.height as u32
     }
-    fn compute_pixel(&self, x: u32, y: u32) -> sdl2::pixels::Color {
-        let result = self.color_at_pixel(x, y);
+    fn compute_pixel_color(&self, pixel: sdl2::rect::Point) -> sdl2::pixels::Color {
+        let result = self.color_at_pixel(pixel.x() as u32, pixel.y() as u32);
         sdl2::pixels::Color {
             r: result,
             g: result,
@@ -37,10 +60,14 @@ impl display::SdlPixelProvider for mandelbrot::MandelbrotContext {
             a: 255,
         }
     }
+    fn point_at_pixel(&self, point: sdl2::rect::Point) -> (f64, f64) {
+        let coords = self.point_at_pixel(point.x() as u32, point.y() as u32);
+        (coords.re, coords.im)
+    }
 }
 
 fn main() {
-    let mandel_ctx = mandelbrot::MandelbrotContext {
+    let mandel_ctx = MandelbrotContext {
         width: 800,
         height: 600,
         upper_left: num::Complex { re: -1.0, im: 1.0 },

@@ -30,7 +30,7 @@ pub struct MandelbrotContext {
 
 impl MandelbrotContext {
     pub fn color_at_pixel(&self, x: u32, y: u32) -> u8 {
-        let mandelbrot_point = self.pixel_to_point(x, y);
+        let mandelbrot_point = self.point_at_pixel(x, y);
         let set_membering = Self::in_mandelbrot_set(mandelbrot_point, self.limit);
         match set_membering {
             Err(val) => self.usize_to_u8(val),
@@ -38,7 +38,7 @@ impl MandelbrotContext {
         }
     }
 
-    fn pixel_to_point(&self, x: u32, y: u32) -> Complex<f64> {
+    pub fn point_at_pixel(&self, x: u32, y: u32) -> Complex<f64> {
         Complex {
             re: self.upper_left.re
                 + (x as f64 / self.width as f64) * (self.lower_right.re - self.upper_left.re),
@@ -79,14 +79,14 @@ mod tests {
             lower_right: Complex { re: 1.0, im: -1.0 },
             limit: 255,
         };
-        assert_eq!(bounds.pixel_to_point(0, 0), Complex { re: -1.0, im: 1.0 });
+        assert_eq!(bounds.point_at_pixel(0, 0), Complex { re: -1.0, im: 1.0 });
         assert_eq!(
-            bounds.pixel_to_point(100, 200),
+            bounds.point_at_pixel(100, 200),
             Complex { re: 1.0, im: -1.0 }
         );
-        assert_eq!(bounds.pixel_to_point(50, 100), Complex { re: 0.0, im: 0.0 });
+        assert_eq!(bounds.point_at_pixel(50, 100), Complex { re: 0.0, im: 0.0 });
         assert_eq!(
-            bounds.pixel_to_point(25, 175),
+            bounds.point_at_pixel(25, 175),
             Complex {
                 re: -0.5,
                 im: -0.75

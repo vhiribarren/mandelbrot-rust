@@ -36,12 +36,20 @@ const SDL_WINDOW_CLEAR_COLOR: Color = Color {
 const SELECTION_RECTANGLE_COLOR: Color = Color::RED;
 
 const IDLE_LOOP_SLEEP_DURATION: Duration = Duration::from_millis(100);
-const RENDERING_LOOP_SLEEP_DURATION: Duration = Duration::from_millis(20);
+const RENDERING_LOOP_ACTIVITY_DURATION: Duration = Duration::from_millis(20);
 
-pub trait SdlPixelProvider {
+pub trait PixelProvider {
+    fn with_new_bounds(
+        self,
+        width: u32,
+        height: u32,
+        point_upper_left: (f64, f64),
+        point_lower_right: (f64, f64),
+    ) -> Self;
     fn width(&self) -> u32;
     fn height(&self) -> u32;
-    fn compute_pixel(&self, x: u32, y: u32) -> Color;
+    fn compute_pixel_color(&self, pixel: Point) -> Color;
+    fn point_at_pixel(&self, pixel: Point) -> (f64, f64);
 }
 
 enum CanvasSelection {
@@ -103,7 +111,7 @@ impl MouseSelection {
     }
 }
 
-pub fn render_sdl(pixel_provider: impl SdlPixelProvider) -> Result<(), String> {
+pub fn render_sdl(mut pixel_provider: impl PixelProvider) -> Result<(), String> {
     let mut mouse_selection = MouseSelection::new();
     let mut render_canvas = Surface::new(
         pixel_provider.width(),
@@ -142,8 +150,8 @@ pub fn render_sdl(pixel_provider: impl SdlPixelProvider) -> Result<(), String> {
         .map_err(|err| err.to_string())?;
 
     let mut event_pump = sdl_context.event_pump()?;
-    let mut width_pos: u32 = 0;
-    let mut height_pos: u32 = 0;
+    let mut width_pos: i32 = 0;
+    let mut height_pos: i32 = 0;
 
     'event_loop: loop {
         for event in event_pump.poll_iter() {
@@ -158,22 +166,25 @@ pub fn render_sdl(pixel_provider: impl SdlPixelProvider) -> Result<(), String> {
         }
 
         let is_rendering: bool;
-        if width_pos < pixel_provider.width() || height_pos < pixel_provider.height() {
+        if (width_pos as u32) < pixel_provider.width()
+            || (height_pos as u32) < pixel_provider.height()
+        {
             is_rendering = true;
             let instant = std::time::Instant::now();
             loop {
-                let pixel_gray = pixel_provider.compute_pixel(width_pos, height_pos);
+                let pixel_gray =
+                    pixel_provider.compute_pixel_color(Point::new(width_pos, height_pos));
                 render_canvas.set_draw_color(pixel_gray);
                 render_canvas.draw_point(Point::new(width_pos as i32, height_pos as i32))?;
                 width_pos += 1;
-                if width_pos >= pixel_provider.width() {
+                if width_pos as u32 >= pixel_provider.width() {
                     width_pos = 0;
                     height_pos += 1;
-                    if height_pos >= pixel_provider.height() {
+                    if height_pos as u32 >= pixel_provider.height() {
                         break;
                     }
                 }
-                if instant.elapsed().gt(&RENDERING_LOOP_SLEEP_DURATION) {
+                if instant.elapsed().gt(&RENDERING_LOOP_ACTIVITY_DURATION) {
                     break;
                 }
             }
@@ -192,7 +203,20 @@ pub fn render_sdl(pixel_provider: impl SdlPixelProvider) -> Result<(), String> {
                 window_canvas.set_draw_color(SELECTION_RECTANGLE_COLOR);
                 window_canvas.draw_rect(rect)?;
             }
-            CanvasSelection::Selected(_) => {}
+            CanvasSelection::Selected(rect) => {
+                let new_width = pixel_provider.width();
+                let new_height = pixel_provider.height();
+                let coords_upper_left = pixel_provider.point_at_pixel(rect.top_left());
+                let coords_lower_right = pixel_provider.point_at_pixel(rect.bottom_right());
+                pixel_provider = pixel_provider.with_new_bounds(
+                    new_width,
+                    new_height,
+                    coords_upper_left,
+                    coords_lower_right,
+                );
+                width_pos = 0;
+                height_pos = 0;
+            }
         }
         window_canvas.present();
         if !is_rendering {
