@@ -59,6 +59,7 @@ enum CanvasSelection {
 }
 
 struct MouseSelection {
+    ratio: f64,
     start_x: i32,
     start_y: i32,
     in_selection: bool,
@@ -66,8 +67,9 @@ struct MouseSelection {
 }
 
 impl MouseSelection {
-    fn new() -> MouseSelection {
+    fn new(ratio: f64) -> MouseSelection {
         MouseSelection {
+            ratio,
             start_x: 0,
             start_y: 0,
             in_selection: false,
@@ -90,7 +92,13 @@ impl MouseSelection {
             self.start_y = mouse_state_y;
         }
         let delta_x = mouse_state_x - self.start_x;
-        let delta_y = mouse_state_y - self.start_y;
+        let sign_y = if mouse_state_y - self.start_y > 0 {
+            1_i32
+        }
+        else {
+            -1_i32
+        };
+        let delta_y = sign_y*(delta_x.abs() as f64 / self.ratio) as i32;
         let origin_x = if delta_x >= 0 {
             self.start_x
         } else {
@@ -99,7 +107,7 @@ impl MouseSelection {
         let origin_y = if delta_y >= 0 {
             self.start_y
         } else {
-            mouse_state_y
+            self.start_y + delta_y
         };
         self.selection = Rect::new(
             origin_x,
@@ -112,7 +120,8 @@ impl MouseSelection {
 }
 
 pub fn render_sdl(mut pixel_provider: impl PixelProvider) -> Result<(), String> {
-    let mut mouse_selection = MouseSelection::new();
+    let screen_ratio = (pixel_provider.width() as f64)/(pixel_provider.height() as f64);
+    let mut mouse_selection = MouseSelection::new(screen_ratio);
     let mut render_canvas = Surface::new(
         pixel_provider.width(),
         pixel_provider.height(),

@@ -67,11 +67,16 @@ impl display::PixelProvider for MandelbrotContext {
 }
 
 fn main() {
+    let screen_ratio = 16_f64/9_f64;
+    let screen_width = 1280;
+    let mandelbrot_x_min = -2.5;
+    let mandelbrot_x_max = 1.5;
+    let mandelbrot_y_max = (mandelbrot_x_max - mandelbrot_x_min)/screen_ratio/2.;
     let mandel_ctx = MandelbrotContext {
-        width: 800,
-        height: 600,
-        upper_left: num::Complex { re: -1.0, im: 1.0 },
-        lower_right: num::Complex { re: 1.0, im: -1.0 },
+        width: screen_width,
+        height: (screen_width as f64/screen_ratio) as usize,
+        upper_left: num::Complex { re: mandelbrot_x_min, im: mandelbrot_y_max },
+        lower_right: num::Complex { re: mandelbrot_x_max, im: -mandelbrot_y_max },
         limit: 255,
     };
     display::render_sdl(mandel_ctx).unwrap();
