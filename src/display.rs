@@ -94,11 +94,10 @@ impl MouseSelection {
         let delta_x = mouse_state_x - self.start_x;
         let sign_y = if mouse_state_y - self.start_y > 0 {
             1_i32
-        }
-        else {
+        } else {
             -1_i32
         };
-        let delta_y = sign_y*(delta_x.abs() as f64 / self.ratio) as i32;
+        let delta_y = sign_y * (delta_x.abs() as f64 / self.ratio) as i32;
         let origin_x = if delta_x >= 0 {
             self.start_x
         } else {
@@ -120,7 +119,7 @@ impl MouseSelection {
 }
 
 pub fn render_sdl(mut pixel_provider: impl PixelProvider) -> Result<(), String> {
-    let screen_ratio = (pixel_provider.width() as f64)/(pixel_provider.height() as f64);
+    let screen_ratio = (pixel_provider.width() as f64) / (pixel_provider.height() as f64);
     let mut mouse_selection = MouseSelection::new(screen_ratio);
     let mut render_canvas = Surface::new(
         pixel_provider.width(),
@@ -140,7 +139,6 @@ pub fn render_sdl(mut pixel_provider: impl PixelProvider) -> Result<(), String> 
             pixel_provider.height(),
         )
         .position_centered()
-        .resizable()
         .build()
         .map_err(|err| err.to_string())?;
 
@@ -175,8 +173,7 @@ pub fn render_sdl(mut pixel_provider: impl PixelProvider) -> Result<(), String> 
         }
 
         let is_rendering: bool;
-        if (height_pos as u32) < pixel_provider.height()
-        {
+        if (height_pos as u32) < pixel_provider.height() {
             is_rendering = true;
             let instant = std::time::Instant::now();
             loop {
