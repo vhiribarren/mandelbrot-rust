@@ -20,6 +20,7 @@ SOFTWARE.
 
 mod display;
 mod mandelbrot;
+mod palette;
 
 use mandelbrot::MandelbrotContext;
 
@@ -51,14 +52,8 @@ impl display::PixelProvider for MandelbrotContext {
     fn height(&self) -> u32 {
         self.height as u32
     }
-    fn compute_pixel_color(&self, pixel: sdl2::rect::Point) -> sdl2::pixels::Color {
-        let result = self.color_at_pixel(pixel.x() as u32, pixel.y() as u32);
-        sdl2::pixels::Color {
-            r: result,
-            g: result,
-            b: result,
-            a: 255,
-        }
+    fn compute_pixel_color(&self, pixel: sdl2::rect::Point) -> usize {
+        self.color_at_pixel(pixel.x() as u32, pixel.y() as u32) as usize
     }
     fn point_at_pixel(&self, point: sdl2::rect::Point) -> (f64, f64) {
         let coords = self.point_at_pixel(point.x() as u32, point.y() as u32);
@@ -67,6 +62,19 @@ impl display::PixelProvider for MandelbrotContext {
 }
 
 fn main() {
+    let limit = 255;
+    let color_start = sdl2::pixels::Color {
+        r: 232,
+        g: 126,
+        b: 4,
+        a: 255,
+    };
+    let color_end = sdl2::pixels::Color {
+        r: 0,
+        g: 0,
+        b: 0x8B,
+        a: 255,
+    };
     let screen_ratio = 16_f64 / 9_f64;
     let screen_width = 1280;
     let mandelbrot_x_min = -2.5;
@@ -83,7 +91,8 @@ fn main() {
             re: mandelbrot_x_max,
             im: -mandelbrot_y_max,
         },
-        limit: 255,
+        limit,
     };
-    display::render_sdl(mandel_ctx).unwrap();
+    let palette = palette::generate_palette(limit, color_start, color_end);
+    display::render_sdl(mandel_ctx, &palette).unwrap();
 }

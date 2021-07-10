@@ -48,7 +48,7 @@ pub trait PixelProvider {
     ) -> Self;
     fn width(&self) -> u32;
     fn height(&self) -> u32;
-    fn compute_pixel_color(&self, pixel: Point) -> Color;
+    fn compute_pixel_color(&self, pixel: Point) -> usize;
     fn point_at_pixel(&self, pixel: Point) -> (f64, f64);
 }
 
@@ -118,7 +118,7 @@ impl MouseSelection {
     }
 }
 
-pub fn render_sdl(mut pixel_provider: impl PixelProvider) -> Result<(), String> {
+pub fn render_sdl(mut pixel_provider: impl PixelProvider, palette: &[Color]) -> Result<(), String> {
     let screen_ratio = (pixel_provider.width() as f64) / (pixel_provider.height() as f64);
     let mut mouse_selection = MouseSelection::new(screen_ratio);
     let mut render_canvas = Surface::new(
@@ -179,7 +179,7 @@ pub fn render_sdl(mut pixel_provider: impl PixelProvider) -> Result<(), String> 
             loop {
                 let pixel_gray =
                     pixel_provider.compute_pixel_color(Point::new(width_pos, height_pos));
-                render_canvas.set_draw_color(pixel_gray);
+                render_canvas.set_draw_color(palette[pixel_gray]);
                 render_canvas.draw_point(Point::new(width_pos as i32, height_pos as i32))?;
                 width_pos += 1;
                 if width_pos as u32 >= pixel_provider.width() {

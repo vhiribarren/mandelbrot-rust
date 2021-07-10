@@ -34,7 +34,7 @@ impl MandelbrotContext {
         let set_membering = Self::in_mandelbrot_set(mandelbrot_point, self.limit);
         match set_membering {
             Err(val) => self.usize_to_u8(val),
-            _ => self.usize_to_u8(self.limit),
+            _ => self.usize_to_u8(self.limit - 1),
         }
     }
 
@@ -57,7 +57,7 @@ impl MandelbrotContext {
     /// of iteration up to the divergence is returned in Err.
     fn in_mandelbrot_set(c: Complex<f64>, limit: usize) -> Result<(), usize> {
         let mut z = Complex { re: 0.0, im: 0.0 };
-        for i in 0..limit {
+        for i in 0..(limit - 1) {
             z = z * z + c;
             if z.norm_sqr() > 4.0 {
                 return Err(i);
