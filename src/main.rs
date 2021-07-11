@@ -62,17 +62,17 @@ impl display::PixelProvider for MandelbrotContext {
 }
 
 fn main() {
-    let limit = 255;
-    let color_start = sdl2::pixels::Color {
-        r: 232,
-        g: 126,
-        b: 4,
+    let limit = 1000;
+    let color_green = sdl2::pixels::Color {
+        r: 0,
+        g: 200,
+        b: 0,
         a: 255,
     };
-    let color_end = sdl2::pixels::Color {
+    let color_blue_dark = sdl2::pixels::Color {
         r: 0,
         g: 0,
-        b: 0x8B,
+        b: 100,
         a: 255,
     };
     let screen_ratio = 16_f64 / 9_f64;
@@ -93,6 +93,13 @@ fn main() {
         },
         limit,
     };
-    let palette = palette::generate_palette(limit, color_start, color_end);
+    //let palette = palette::generate_palette_gradient_bicolor(limit, color_start, color_end);
+    let color_gradient = vec![
+        (color_blue_dark, 0.),
+        (sdl2::pixels::Color::WHITE, 0.4),
+        (sdl2::pixels::Color::BLACK, 0.5),
+        (color_green, 0.6),
+        (color_blue_dark, 1.)];
+    let palette = palette::generate_palette_gradient_multiple(limit, &color_gradient);
     display::render_sdl(mandel_ctx, &palette).unwrap();
 }
