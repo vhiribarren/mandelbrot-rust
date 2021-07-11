@@ -29,12 +29,12 @@ pub struct MandelbrotContext {
 }
 
 impl MandelbrotContext {
-    pub fn color_at_pixel(&self, x: u32, y: u32) -> u8 {
+    pub fn color_at_pixel(&self, x: u32, y: u32) -> usize {
         let mandelbrot_point = self.point_at_pixel(x, y);
         let set_membering = Self::in_mandelbrot_set(mandelbrot_point, self.limit);
         match set_membering {
-            Err(val) => self.usize_to_u8(val),
-            _ => self.usize_to_u8(self.limit - 1),
+            Err(val) => val,
+            _ => self.limit - 1,
         }
     }
 
