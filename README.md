@@ -4,7 +4,7 @@
 
 A toy project to generate Mandelbrot images using Rust.
 
-For now, no parallel computation, no color, no specific features. But it is possible to zoom to a
+For now, no parallel computation, no specific features. But it is possible to zoom to a
 specific view by drawing a rectangle with the mouse.
 
 ## How to start
