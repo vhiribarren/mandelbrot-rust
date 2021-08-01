@@ -6,3 +6,5 @@ edition = "2018"
 [dependencies]
 num = "0.4"
 sdl2 =  { version = "0.34.2", features = ["bundled"] }
+log = "0.4.14"
+simplelog = "0.10.0"

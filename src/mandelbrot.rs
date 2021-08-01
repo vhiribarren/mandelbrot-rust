@@ -47,10 +47,6 @@ impl MandelbrotContext {
         }
     }
 
-    fn usize_to_u8(&self, val: usize) -> u8 {
-        (255_f64 * (val as f64) / (self.limit as f64)) as u8
-    }
-
     /// Check if c is in the Mandelbrot set
     ///
     /// It is a success if the result is Ok, otherwise the number
