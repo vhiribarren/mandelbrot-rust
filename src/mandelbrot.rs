@@ -18,13 +18,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-use num::Complex;
+use rug::{Complex, Float};
+
+pub const FLOAT_PRECISION: u32 = 120;
 
 pub struct MandelbrotContext {
     pub width: usize,
     pub height: usize,
-    pub upper_left: Complex<f64>,
-    pub lower_right: Complex<f64>,
+    pub upper_left: Complex,
+    pub lower_right: Complex,
     pub limit: usize,
 }
 
@@ -38,24 +40,21 @@ impl MandelbrotContext {
         }
     }
 
-    pub fn point_at_pixel(&self, x: u32, y: u32) -> Complex<f64> {
-        Complex {
-            re: self.upper_left.re
-                + (x as f64 / self.width as f64) * (self.lower_right.re - self.upper_left.re),
-            im: self.upper_left.im
-                - (y as f64 / self.height as f64) * (self.upper_left.im - self.lower_right.im),
-        }
+    pub fn point_at_pixel(&self, x: u32, y: u32) -> Complex {
+        let coord_x = self.upper_left.real() + (x as f64 / self.width as f64) * Float::with_val(FLOAT_PRECISION, self.lower_right.real() - self.upper_left.real());
+        let coord_y = self.upper_left.imag() - (y as f64 / self.height as f64) * Float::with_val(FLOAT_PRECISION, self.upper_left.imag() - self.lower_right.imag());
+        Complex::with_val(FLOAT_PRECISION, Complex::with_val(FLOAT_PRECISION, (coord_x, coord_y)))
     }
 
     /// Check if c is in the Mandelbrot set
     ///
     /// It is a success if the result is Ok, otherwise the number
     /// of iteration up to the divergence is returned in Err.
-    fn in_mandelbrot_set(c: Complex<f64>, limit: usize) -> Result<(), usize> {
-        let mut z = Complex { re: 0.0, im: 0.0 };
+    fn in_mandelbrot_set(c: Complex, limit: usize) -> Result<(), usize> {
+        let mut z = Complex::with_val(FLOAT_PRECISION, (0., 0.));
         for i in 0..(limit - 1) {
-            z = z * z + c;
-            if z.norm_sqr() > 4.0 {
+            z = Complex::with_val(FLOAT_PRECISION, &z * &z + &c);
+            if z.clone().norm().real() > &2.0 {
                 return Err(i);
             }
         }

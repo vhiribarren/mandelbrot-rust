@@ -27,6 +27,7 @@ use mandelbrot::MandelbrotContext;
 use crate::display::CanvasBounds;
 use log::info;
 use simplelog::{ColorChoice, Config, LevelFilter, TermLogger, TerminalMode};
+use rug::Complex;
 
 struct MandelbrotProvider {
     limit: usize,
@@ -43,14 +44,8 @@ impl display::PixelComputeProvider<MandelbrotContext> for MandelbrotProvider {
         MandelbrotContext {
             width: bounds.width as usize,
             height: bounds.height as usize,
-            upper_left: num::Complex {
-                re: bounds.upper_left.0,
-                im: bounds.upper_left.1,
-            },
-            lower_right: num::Complex {
-                re: bounds.lower_right.0,
-                im: bounds.lower_right.1,
-            },
+            upper_left: Complex::with_val(mandelbrot::FLOAT_PRECISION, (bounds.upper_left.0, bounds.upper_left.1)),
+            lower_right: Complex::with_val(mandelbrot::FLOAT_PRECISION, (bounds.lower_right.0, bounds.lower_right.1)),
             limit: self.limit,
         }
     }

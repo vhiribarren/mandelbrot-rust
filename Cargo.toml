@@ -8,3 +8,4 @@ num = "0.4"
 sdl2 =  { version = "0.34.2", features = ["bundled"] }
 log = "0.4.14"
 simplelog = "0.10.0"
+rug = {version = "1.13", features = ["complex", "float"]}
